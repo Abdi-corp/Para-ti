@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Para ti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,500;1,600&family=Lora:ital,wght@0,400;0,500;1,400&family=Parisienne&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blush:#f7e4e9;
+    --blush-deep:#f0d2db;
+    --wine:#5c1a34;
+    --wine-deep:#3d0f22;
+    --rose:#b85c72;
+    --gold:#c9a15a;
+    --cream:#fff9f5;
+    --ink:#2b1520;
+    --petal:#f2c6d1;
+    --transition-slow: 900ms cubic-bezier(.22,.61,.36,1);
+    --header-h: 92px;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  html{ -webkit-text-size-adjust:100%; }
+
+  html,body{
+    min-height:100%;
+    min-height:100dvh;
+    width:100%;
+    font-family:'Lora', serif;
+    color:var(--ink);
+    background:var(--blush);
+    overflow-x:hidden;
+  }
+
+  img, video{ max-width:100%; height:auto; }
+
+  .display{
+    font-family:'Cormorant Garamond', serif;
+  }
+
+  .script{
+    font-family:'Parisienne', cursive;
+  }
+
+  /* ---------- floating petals ambience ---------- */
+  #petal-field{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:1;
+    overflow:hidden;
+  }
+  .petal{
+    position:absolute;
+    top:-40px;
+    width:14px;
+    height:18px;
+    background:var(--petal);
+    border-radius:0 100% 0 100%;
+    opacity:.55;
+    animation:fall linear infinite;
+  }
+  .petal.heart{
+    background:none;
+    border-radius:0;
+    font-size:16px;
+    line-height:1;
+    color:var(--rose);
+    width:auto;
+    height:auto;
+  }
+  @keyframes fall{
+    0%{ transform: translateY(-5vh) translateX(0) rotate(0deg); }
+    50%{ transform: translateY(50vh) translateX(-18px) rotate(140deg); }
+    100%{ transform: translateY(105vh) translateX(30px) rotate(280deg); }
+  }
+  @keyframes fadeInUp{
+    from{ opacity:0; transform:translateY(16px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  @keyframes heartbeat{
+    0%, 100%{ transform:scale(1); }
+    18%{ transform:scale(1.14); }
+    32%{ transform:scale(1); }
+    46%{ transform:scale(1.09); }
+    60%{ transform:scale(1); }
+  }
+  @keyframes glowPulse{
+    0%, 100%{ box-shadow:0 24px 60px rgba(0,0,0,0.35), 0 0 0 rgba(242,198,209,0); }
+    50%{ box-shadow:0 24px 70px rgba(0,0,0,0.4), 0 0 32px rgba(242,198,209,0.35); }
+  }
+  @keyframes pulseHeart{
+    0%, 100%{ transform:scale(1); }
+    50%{ transform:scale(1.25); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .petal{ animation:none; display:none; }
+    .letter-text p{ animation:none !important; opacity:1 !important; transform:none !important; }
+    #tulip-progress svg{ animation:none !important; }
+    .video-wrap{ animation:none !important; }
+  }
+
+  /* ---------- tulip progress signature ---------- */
+  #tulip-progress{
+    position:fixed;
+    top:22px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:10;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+  }
+  #tulip-progress svg{ width:46px; height:56px; animation:heartbeat 2.8s ease-in-out infinite; transform-origin:50% 70%; }
+  .petal-shape{ transition: fill 700ms ease, opacity 700ms ease; fill: rgba(92,26,52,0.15); }
+  .stem-shape{ stroke:var(--wine); opacity:.5; }
+  #tulip-label{
+    font-size:.68rem;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--wine);
+    opacity:.7;
+  }
+
+  /* ---------- screens ---------- */
+  .screen{
+    position:fixed;
+    inset:0;
+    min-height:100dvh;
+    display:block;
+    padding-top:calc(var(--header-h) + 20px);
+    padding-bottom:max(50px, env(safe-area-inset-bottom));
+    padding-left:max(20px, env(safe-area-inset-left));
+    padding-right:max(20px, env(safe-area-inset-right));
+    opacity:0;
+    visibility:hidden;
+    transform:translateY(18px);
+    transition:opacity var(--transition-slow), transform var(--transition-slow), visibility var(--transition-slow);
+    z-index:2;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  .screen.active{
+    opacity:1;
+    visibility:visible;
+    transform:translateY(0);
+  }
+
+  .letter-text p{ opacity:0; animation:fadeInUp 650ms ease forwards; animation-delay:calc(var(--i, 0) * 90ms); }
+
+  .screen-inner{
+    max-width:640px;
+    width:100%;
+    margin:0 auto;
+    text-align:center;
+    padding-bottom:20px;
+  }
+
+  #screen-1{ background:radial-gradient(circle at 50% 20%, var(--blush-deep), var(--blush) 70%); }
+  #screen-2{ background:radial-gradient(circle at 50% 15%, #f4dbe3, #ecc9d5 60%, #e3b9c9 100%); }
+  #screen-3{ background:radial-gradient(circle at 50% 20%, var(--blush), #f9ecef 60%, var(--cream) 100%); }
+  #screen-4{ background:radial-gradient(circle at 50% 10%, #4a1428, var(--wine-deep) 70%); color:var(--cream); }
+
+  h1.headline{
+    font-size:clamp(1.9rem, 4vw, 2.6rem);
+    font-style:italic;
+    font-weight:600;
+    color:var(--wine);
+    margin-bottom:22px;
+    line-height:1.25;
+  }
+  #screen-4 h1.headline{ color:var(--petal); }
+
+  .letter-text p{
+    font-size:clamp(1rem, 1.6vw, 1.12rem);
+    line-height:1.85;
+    margin-bottom:18px;
+    text-align:left;
+    color:var(--ink);
+  }
+  #screen-4 .letter-text p{ color:#f6e6ea; text-align:left; }
+
+  #screen-2 .letter-text{
+    max-height:min(58vh, 560px);
+    overflow-y:auto;
+    padding:26px 30px;
+    background:rgba(255,249,245,0.55);
+    border-radius:18px;
+    border:1px solid rgba(92,26,52,0.12);
+    box-shadow:0 20px 50px rgba(92,26,52,0.08);
+    text-align:left;
+  }
+  @media (max-width:700px){
+    #screen-2 .letter-text{
+      max-height:none;
+      overflow-y:visible;
+      padding:20px;
+    }
+  }
+  #screen-2 .letter-text::-webkit-scrollbar{ width:6px; }
+  #screen-2 .letter-text::-webkit-scrollbar-thumb{ background:var(--rose); border-radius:6px; }
+
+  .btn{
+    margin-top:34px;
+    padding:14px 40px;
+    border-radius:999px;
+    border:1px solid var(--wine);
+    background:transparent;
+    color:var(--wine);
+    font-family:'Lora', serif;
+    font-size:.95rem;
+    letter-spacing:.06em;
+    cursor:pointer;
+    transition:background 300ms ease, color 300ms ease, transform 300ms ease;
+  }
+  .btn:hover{ background:var(--wine); color:var(--cream); transform:translateY(-2px); }
+  #screen-4 .btn{ border-color:var(--petal); color:var(--petal); }
+  #screen-4 .btn:hover{ background:var(--petal); color:var(--wine-deep); }
+
+  /* ---------- carousel ---------- */
+  .carousel-caption{
+    font-size:clamp(1.1rem,2.4vw,1.4rem);
+    font-style:italic;
+    font-family:'Cormorant Garamond', serif;
+    color:var(--wine);
+    margin-bottom:26px;
+  }
+  .carousel{
+    position:relative;
+    width:min(100%, 62vh, 520px);
+    max-width:520px;
+    margin:0 auto;
+    aspect-ratio:4/5;
+    border-radius:22px;
+    overflow:hidden;
+    box-shadow:0 24px 60px rgba(92,26,52,0.18);
+    background:linear-gradient(135deg, var(--blush-deep), var(--petal));
+  }
+  .carousel-track{
+    display:flex;
+    height:100%;
+    transition:transform 700ms cubic-bezier(.22,.61,.36,1);
+  }
+  .carousel-slide{
+    min-width:100%;
+    height:100%;
+    position:relative;
+  }
+  .carousel-slide img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  .carousel-fallback{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    gap:8px;
+    color:var(--wine);
+    font-size:.85rem;
+    background:linear-gradient(135deg, var(--blush-deep), var(--petal));
+  }
+  .carousel-arrow{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    background:rgba(255,249,245,0.85);
+    border:none;
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    color:var(--wine);
+    font-size:1.1rem;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:3;
+    transition:background 200ms ease;
+  }
+  .carousel-arrow:hover{ background:var(--cream); }
+  .carousel-arrow.prev{ left:12px; }
+  .carousel-arrow.next{ right:12px; }
+  .carousel-dots{
+    display:flex;
+    justify-content:center;
+    gap:9px;
+    margin-top:18px;
+  }
+  .dot{
+    width:9px; height:9px;
+    border-radius:50%;
+    background:rgba(92,26,52,0.25);
+    border:none;
+    cursor:pointer;
+    transition:background 200ms ease, transform 200ms ease;
+  }
+  .dot.active{ background:var(--wine); transform:scale(1.25); }
+
+  /* ---------- video section ---------- */
+  .video-wrap{
+    width:100%;
+    max-width:520px;
+    margin:0 auto;
+    border-radius:18px;
+    overflow:hidden;
+    background:#000;
+    animation:glowPulse 3.6s ease-in-out infinite;
+  }
+  .video-wrap video{
+    width:100%;
+    display:block;
+    max-height:60vh;
+  }
+  .song-title{
+    margin-top:22px;
+    font-size:clamp(1.6rem,3.4vw,2.1rem);
+    color:var(--petal);
+  }
+
+  .carousel-slide img{ transition:transform 600ms ease; }
+  .carousel:hover .carousel-slide img, .carousel:focus-within .carousel-slide img{ transform:scale(1.04); }
+
+  .btn{ position:relative; overflow:hidden; }
+  .btn:active{ transform:translateY(0) scale(.97); }
+
+  .song-title::before{
+    content:"♡ ";
+  }
+  .final-heart{
+    display:inline-block;
+    animation:pulseHeart 1.6s ease-in-out infinite;
+  }
+
+  @media (max-width:700px){
+    :root{ --header-h: 64px; }
+    #tulip-progress{ top:12px; }
+    #tulip-progress svg{ width:34px; height:42px; }
+    #tulip-label{ font-size:.58rem; }
+    .screen{ padding-left:18px; padding-right:18px; }
+    .letter-text p{ font-size:1rem; margin-bottom:14px; }
+    .carousel{ width:min(100%, 62vh); aspect-ratio:1/1.1; }
+    .carousel-arrow{ width:34px; height:34px; font-size:1rem; }
+    .btn{ padding:13px 32px; font-size:.9rem; margin-top:26px; }
+    .headline{ font-size:clamp(1.5rem, 7vw, 2.1rem); }
+    .song-title{ font-size:clamp(1.3rem, 7vw, 1.8rem); }
+    .video-wrap video{ max-height:44vh; }
+  }
+
+  @media (max-width:380px){
+    :root{ --header-h: 56px; }
+    .screen{ padding-left:14px; padding-right:14px; }
+    #screen-2 .letter-text{ padding:16px 14px; }
+    .letter-text p{ font-size:.95rem; line-height:1.75; }
+  }
+
+  @media (max-height:640px) and (orientation:landscape){
+    :root{ --header-h: 0px; }
+    #tulip-progress{ display:none; }
+    .screen{ padding-top:20px; }
+    .carousel{ width:min(60vw, 340px); aspect-ratio:16/9; }
+    .video-wrap video{ max-height:52vh; }
+  }
+</style>
+</head>
+<body>
+
+<div id="petal-field"></div>
+
+<div id="tulip-progress">
+  <svg viewBox="0 0 60 70" fill="none">
+    <line x1="30" y1="70" x2="30" y2="34" class="stem-shape" stroke-width="2"/>
+    <path id="petal-a" class="petal-shape" d="M30 34 C10 30 8 8 22 4 C26 12 28 24 30 34Z"/>
+    <path id="petal-b" class="petal-shape" d="M30 34 C50 30 52 8 38 4 C34 12 32 24 30 34Z"/>
+    <path id="petal-c" class="petal-shape" d="M30 34 C18 24 20 6 30 2 C40 6 42 24 30 34Z"/>
+  </svg>
+  <span id="tulip-label">1 / 4</span>
+</div>
+
+<!-- SCREEN 1 -->
+<section class="screen active" id="screen-1">
+  <div class="screen-inner">
+    <p class="letter-text" style="text-align:center;">
+      Hola, ¿cómo estás? Espero de corazón que las flores te hayan gustado.
+    </p>
+    <div class="letter-text" style="text-align:left; margin-top:10px;">
+      <p>Hace mucho tiempo me prometí que algún día iba a regalarte tus flores favoritas: tulipanes. Era una promesa que tenía conmigo mismo y, pasara lo que pasara, no quería irme sin cumplirla. Hoy, por fin, pude hacerlo.</p>
+      <p>Tambien gracias por tomarte un momento para estar aquí. Si llegaste hasta esta página, es porque decidiste darle una oportunidad a unas palabras que nacen desde lo más sincero de mi corazón.</p>
+      <p>Lo que estás a punto de leer no pretende presionarte ni cambiar lo que sientes de un instante a otro. Simplemente es una forma de abrirte mi corazón y decirte cosas que creo que merecen ser dichas.</p>
+      <p>Espero que leas cada palabra con calma y que te lleguen al corazon. Gracias por estar aquí.</p>
+    </div>
+    <button class="btn" onclick="goTo(2)">Continuar</button>
+  </div>
+</section>
+
+<!-- SCREEN 2 -->
+<section class="screen" id="screen-2">
+  <div class="screen-inner">
+    <h1 class="headline">Tengo muchas cosas que decirte</h1>
+    <div class="letter-text">
+      <p>Tengo muchas cosas que decirte, cosas que quizás mientras estuvimos juntos no expresé lo suficiente.</p>
+      <p>Siempre te amé. Siempre fuiste mi mayor motivación para querer ser una mejor persona, para seguir adelante y esforzarme cada día. Eras mi prioridad, y la verdad es que nunca quise descuidar lo que, con tanto esfuerzo, ambos construíamos día tras día.</p>
+      <p>Nuestra relación nunca fue algo que diera por sentado. Para mí era un proyecto de vida, algo que valía la pena cuidar, proteger y hacer crecer. Si alguna vez no supe demostrarlo como debía, hoy quiero que al menos sepas que ese siempre fue mi sentir.</p>
+      <p>Claro que nuestra relación tuvo muchísimos altibajos. Éramos dos personas imperfectas, intentando amar de la mejor manera que sabíamos.</p>
+      <p>Yo reconozco que muchas veces fui una persona muy celosa y controladora. Quizás, por el miedo tan grande que tenía de perderte, terminé actuando de formas que no eran las correctas. Eso nunca fue una excusa, pero sí una realidad de la que hoy soy consciente.</p>
+      <p>Con el tiempo entendí que amar a alguien también significa confiar, respetar su espacio y darle tranquilidad, y lamento sinceramente las veces en que no supe hacerlo.</p>
+      <p>Y la verdad es que también me daba mucho miedo perderte. Muchas veces sentía que, aunque me amabas, también pensabas que lo mejor era terminar, y ese miedo hizo que actuara desde la inseguridad en lugar de hacerlo desde la confianza.</p>
+      <p>Es irónico que, al final, aquello que tanto temía terminó sucediendo: nos separamos. Y quizá, sin darnos cuenta, ambos terminamos alejándonos cuando lo que más queríamos era que las cosas funcionaran.</p>
+      <p>Pero también reconozco, y soy plenamente consciente, de que pude haberlo hecho mucho mejor. Hay cosas que, si pudiera volver atrás, haría de otra manera.</p>
+      <p>Durante todo este tiempo he pensado mucho en nosotros, en lo mucho que te amaba y en cuánto deseaba que siguieras a mi lado. La distancia me hizo reflexionar sobre mis errores, sobre las oportunidades que dejé pasar y sobre todo aquello que nunca supe expresar cuando todavía estábamos juntos.</p>
+      <p>Y aunque al final fuiste tú quien tomó la decisión de irse, hoy comprendo mucho mejor por qué lo hiciste. Con el tiempo entendí que siempre intentaste cuidar lo que teníamos y también cuidarme a mí.</p>
+      <p>Ahora valoro mucho más tus detalles, la prudencia con la que tomabas las decisiones y la forma en que actuabas para proteger nuestra relación. Mirándolo en retrospectiva, me doy cuenta de que muchas veces dejé sobre tus hombros responsabilidades que también me correspondían, hasta el punto de que terminaste sintiéndote abrumada. Lamento sinceramente haber permitido que cargaras con tanto.</p>
+      <p>No puedo saber con certeza cómo te sientes hoy, ni quiero asumirlo por ti. Lo que sí creo es que la decisión que tomaste nació del deseo de cuidar de ti, y quizá también de cuidar lo que alguna vez tuvimos. Ahora entiendo que, a veces, alejarse puede ser la decisión que una persona siente que necesita tomar, aunque duela, y hoy respeto eso mucho más de lo que supe hacerlo en aquel momento.</p>
+      <p>Siento que todavía puede haber amor entre nosotros. Sin embargo, también creo que estás intentando dejar ese amor atrás porque piensas que es lo mejor para cuidarte y para cuidarnos. Aunque me duela, hoy entiendo esa decisión y la respeto.</p>
+      <p>Pero también tengo un fuerte deseo de que, pudiéramos empezar de nuevo, desde cero. No para repetir nuestra historia, sino para construir una mejor, aprendiendo de todo lo que vivimos.</p>
+      <p>Aunque tuvimos muchos altibajos, también vivimos momentos muy felices. Hubo días en los que simplemente nos sentíamos agradecidos de tenernos el uno al otro, y esos recuerdos siguen siendo muy especiales para mí.</p>
+      <p>Todavía recuerdo aquella noche de 2023 en la que me acosté a dormir después de enterarme de que yo también te gustaba. Tú me gustabas muchísimo, igual que ahora, y no podía dejar de imaginar todo lo que podríamos vivir juntos. Pensar en nuestro futuro me llenaba de una felicidad inmensa, una de esas emociones que nunca se olvidan.</p>
+    </div>
+    <button class="btn" onclick="goTo(3)">Continuar</button>
+  </div>
+</section>
+
+<!-- SCREEN 3 -->
+<section class="screen" id="screen-3">
+  <div class="screen-inner">
+    <p class="carousel-caption">Nuestra historia estuvo llena de momentos que siempre llevaré conmigo.</p>
+    <div class="carousel" id="carousel">
+      <button class="carousel-arrow prev" onclick="carouselMove(-1)" aria-label="Anterior">&#10094;</button>
+      <button class="carousel-arrow next" onclick="carouselMove(1)" aria-label="Siguiente">&#10095;</button>
+      <div class="carousel-track" id="carousel-track">
+        <div class="carousel-slide">
+          <img src="fotos/Foto1.png" alt="Foto 1" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div class="carousel-fallback" style="display:none;">💐<span>images/foto1.jpg</span></div>
+        </div>
+        <div class="carousel-slide">
+          <img src="fotos/Foto2.png" alt="Foto 2" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div class="carousel-fallback" style="display:none;">💐<span>images/foto2.jpg</span></div>
+        </div>
+        <div class="carousel-slide">
+          <img src="fotos/Foto3.png"" alt="Foto 3" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div class="carousel-fallback" style="display:none;">💐<span>images/foto3.jpg</span></div>
+        </div>
+        <div class="carousel-slide">
+          <img src="fotos/Foto4.png"" alt="Foto 4" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div class="carousel-fallback" style="display:none;">💐<span>images/foto4.jpg</span></div>
+        </div>
+        <div class="carousel-slide">
+          <img src="fotos/Foto5.png"" alt="Foto 5" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div class="carousel-fallback" style="display:none;">💐<span>images/foto5.jpg</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="carousel-dots" id="carousel-dots"></div>
+    <button class="btn" onclick="goTo(4)">Continuar</button>
+  </div>
+</section>
+
+<!-- SCREEN 4 -->
+<section class="screen" id="screen-4">
+  <div class="screen-inner">
+    <div class="letter-text">
+      <p>Y es que ahora me doy cuenta de lo mucho que te amo. Todo este tiempo me ha hecho reflexionar y cambiar mi forma de ver las cosas, de entender los problemas y de afrontar las situaciones de una manera más madura.</p>
+      <p>No puedo cambiar lo que pasó, pero sí puedo cambiar la persona que soy de aquí en adelante. Por eso, con toda sinceridad, me gustaría pedirte una oportunidad más. No para volver a empezar como si nada hubiera pasado, sino para demostrarte, con hechos y no solo con palabras, que he aprendido de mis errores y que hoy sería capaz de cuidar mucho mejor de lo que un día tuvimos.</p>
+      <p>No espero que tomes una decisión en este mismo momento. Solo quería que conocieras todo lo que había en mi corazón y que supieras que cada una de estas palabras es completamente sincera.</p>
+      <p>Si al final decides que nuestros caminos deben seguir separados, respetaré tu decisión y siempre te desearé lo mejor. Pero si en algún momento de tu corazón sientes que aún existe una oportunidad para nosotros, me encantaría volver a caminar a tu lado.</p>
+      <p>No para repetir nuestra historia, sino para escribir una mejor. Una en la que la confianza sea más fuerte que los miedos, la comunicación sea más grande que los silencios y en la que ambos podamos sentirnos seguros, escuchados y valorados. Quiero que, si alguna vez volvemos a encontrarnos, sea con la madurez que antes nos faltó y con la determinación de cuidar lo que tanto nos costó construir.</p>
+      <p>Y antes de terminar, quiero dejarte una canción. No porque pueda expresar mejor que yo lo que siento, sino porque hay sentimientos que, a veces, la música logra transmitir de una forma que las palabras no alcanzan. Ojalá, mientras la escuches, puedas recordar los momentos bonitos que vivimos y entender que cada palabra de esta carta nació desde lo más sincero de mi corazón.</p>
+      <p>Gracias por tomarte el tiempo de leerme. Pase lo que pase, siempre agradeceré haber coincidido contigo y haber compartido una parte tan importante de mi vida a tu lado. <span class="final-heart">❤️</span></p>
+    </div>
+
+    <div class="video-wrap">
+      <video controls poster="images/video-poster.jpg">
+        <source src="video/Morat - De Cero (Letra).mp4" type="video/mp4">
+        Tu navegador no soporta el video.
+      </video>
+    </div>
+    <p class="song-title script">Morat - De cero</p>
+  </div>
+</section>
+
+<script>
+  // ---------- petals & hearts ----------
+  const petalField = document.getElementById('petal-field');
+  const isSmall = window.innerWidth < 600;
+  const PETAL_COUNT = isSmall ? 9 : 16;
+  for(let i=0;i<PETAL_COUNT;i++){
+    const p = document.createElement('div');
+    const isHeart = Math.random() < 0.3;
+    p.className = 'petal' + (isHeart ? ' heart' : '');
+    if(isHeart){ p.textContent = '♥'; }
+    p.style.left = Math.random()*100 + 'vw';
+    p.style.animationDuration = (9 + Math.random()*8) + 's';
+    p.style.animationDelay = (Math.random()*10) + 's';
+    p.style.opacity = 0.3 + Math.random()*0.35;
+    p.style.transform = 'scale(' + (0.7 + Math.random()*0.8) + ')';
+    petalField.appendChild(p);
+  }
+
+  // assign stagger index to every paragraph for the fade-in-up animation
+  document.querySelectorAll('.letter-text p').forEach((p, i) => {
+    p.style.setProperty('--i', Math.min(i, 10));
+  });
+
+  function replayParagraphs(screenEl){
+    const paras = screenEl.querySelectorAll('.letter-text p');
+    paras.forEach(p => {
+      p.style.animation = 'none';
+      void p.offsetWidth; // force reflow to restart animation
+      p.style.animation = '';
+    });
+  }
+
+  // ---------- screen navigation ----------
+  let currentScreen = 1;
+  const totalScreens = 4;
+  const petalIds = ['petal-a','petal-b','petal-c'];
+  const tulipLabel = document.getElementById('tulip-label');
+
+  function updateTulip(stage){
+    petalIds.forEach((id, idx) => {
+      const el = document.getElementById(id);
+      const filled = idx < stage; // stage 1 -> one petal filled, stage 4 -> all filled + full color
+      el.style.fill = filled ? 'var(--wine)' : 'rgba(92,26,52,0.15)';
+    });
+    if(stage >= 4){
+      petalIds.forEach(id => document.getElementById(id).style.fill = 'var(--gold)');
+    }
+    tulipLabel.textContent = stage + ' / ' + totalScreens;
+  }
+
+  function goTo(n){
+    document.getElementById('screen-' + currentScreen).classList.remove('active');
+    currentScreen = n;
+    const nextScreen = document.getElementById('screen-' + currentScreen);
+    nextScreen.classList.add('active');
+    nextScreen.scrollTop = 0;
+    updateTulip(currentScreen);
+    replayParagraphs(nextScreen);
+    if(n === 3){ startCarousel(); } else if(carouselTimer){ clearInterval(carouselTimer); }
+  }
+
+  updateTulip(1);
+  replayParagraphs(document.getElementById('screen-1'));
+
+  // ---------- carousel ----------
+  const track = document.getElementById('carousel-track');
+  const dotsWrap = document.getElementById('carousel-dots');
+  const slideCount = document.querySelectorAll('.carousel-slide').length;
+  let slideIndex = 0;
+  let carouselTimer = null;
+
+  for(let i=0;i<slideCount;i++){
+    const dot = document.createElement('button');
+    dot.className = 'dot' + (i===0 ? ' active' : '');
+    dot.setAttribute('aria-label', 'Ir a la foto ' + (i+1));
+    dot.onclick = () => { slideIndex = i; renderCarousel(); resetCarouselTimer(); };
+    dotsWrap.appendChild(dot);
+  }
+
+  function renderCarousel(){
+    track.style.transform = 'translateX(-' + (slideIndex * 100) + '%)';
+    document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === slideIndex));
+  }
+
+  function carouselMove(dir){
+    slideIndex = (slideIndex + dir + slideCount) % slideCount;
+    renderCarousel();
+    resetCarouselTimer();
+  }
+
+  function startCarousel(){
+    resetCarouselTimer();
+  }
+
+  function resetCarouselTimer(){
+    if(carouselTimer) clearInterval(carouselTimer);
+    carouselTimer = setInterval(() => { carouselMove(1); }, 4500);
+  }
+
+  const carouselEl = document.getElementById('carousel');
+  carouselEl.addEventListener('mouseenter', () => { if(carouselTimer) clearInterval(carouselTimer); });
+  carouselEl.addEventListener('mouseleave', () => { if(currentScreen === 3) resetCarouselTimer(); });
+
+  // touch swipe
+  let touchStartX = 0;
+  carouselEl.addEventListener('touchstart', (e) => {
+    touchStartX = e.touches[0].clientX;
+    if(carouselTimer) clearInterval(carouselTimer);
+  }, {passive:true});
+  carouselEl.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if(Math.abs(dx) > 40){ carouselMove(dx < 0 ? 1 : -1); }
+    else if(currentScreen === 3){ resetCarouselTimer(); }
+  }, {passive:true});
+
+  // keyboard navigation (left/right for carousel, enter to continue)
+  document.addEventListener('keydown', (e) => {
+    if(currentScreen === 3){
+      if(e.key === 'ArrowLeft') carouselMove(-1);
+      if(e.key === 'ArrowRight') carouselMove(1);
+    }
+    if(e.key === 'Enter'){
+      const activeBtn = document.querySelector('.screen.active .btn');
+      if(activeBtn) activeBtn.click();
+    }
+  });
+</script>
+
+</body>
+</html>
